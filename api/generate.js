@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       size = 1024,             // 512 | 768 | 1024
       seed                      // opcional
     } = req.body || {};
-
+nano api/generate.js
     if (!prompt || typeof prompt !== 'string') {
       return res.status(400).json({ error: 'Prompt is required' });
     }
