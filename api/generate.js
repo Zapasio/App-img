@@ -1,12 +1,11 @@
-// Fuerza runtime Node.js (no Edge)
-export const config = { runtime: 'nodejs18.x' };
+// Fuerza runtime Node.js (Vercel usa Node 18 por defecto)
+export const config = { runtime: 'nodejs' };
 
-// Lectura segura del body en Vercel/Next/Node
+// Lectura segura del body
 async function readJsonBody(req) {
   try {
     if (req.body && typeof req.body === 'object') return req.body;
     if (req.body && typeof req.body === 'string') return JSON.parse(req.body);
-    // Body como stream
     const chunks = [];
     for await (const c of req) chunks.push(c);
     const raw = Buffer.concat(chunks).toString('utf8');
@@ -29,20 +28,18 @@ export default async function handler(req, res) {
     if (!apiKey) return res.status(500).json({ error: 'Falta STABILITY_API_KEY en Vercel' });
     if (!prompt) return res.status(400).json({ error: 'Falta prompt' });
 
-    // FormData nativa (Node 18 / undici)
     const form = new FormData();
     form.append('prompt', prompt);
     form.append('width', String(width));
     form.append('height', String(height));
     if (seed !== undefined) form.append('seed', String(seed));
     if (negative_prompt) form.append('negative_prompt', negative_prompt);
-    // form.append('output_format', 'png'); // opcional
 
     const resp = await fetch('https://api.stability.ai/v2beta/stable-image/generate/core', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        Accept: 'image/*', // Stability acepta image/* o application/json
+        Accept: 'image/*',
       },
       body: form,
     });
@@ -50,13 +47,11 @@ export default async function handler(req, res) {
     const ct = resp.headers.get('content-type') || '';
 
     if (resp.ok && ct.startsWith('image/')) {
-      // Convertimos binario a base64 y devolvemos JSON
       const buf = Buffer.from(await resp.arrayBuffer());
       const dataUrl = `data:${ct};base64,${buf.toString('base64')}`;
       return res.status(200).json({ image: dataUrl });
     }
 
-    // Intentamos leer JSON de error o texto
     let payload;
     try {
       payload = await resp.json();
