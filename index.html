@@ -1,93 +1,139 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ByZaPa – Generador de Imágenes</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; padding: 24px; max-width: 820px; }
-    h1 { font-size: 1.25rem; margin: 0 0 12px; }
-    .card { border: 1px solid #e5e7eb; border-radius: 16px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
-    label { display:block; font-weight:600; margin: 10px 0 6px; }
-    input, select, textarea, button { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #d1d5db; font-size: 16px; }
-    button { cursor:pointer; border: none; background: black; color: white; font-weight: 700; }
-    button[disabled] { opacity: .6; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .out { margin-top: 16px; display:flex; gap: 12px; align-items:center; }
-    img { max-width: 100%; border-radius: 12px; border: 1px solid #e5e7eb; }
-    .hint { color:#6b7280; font-size: .9rem; }
-    .badge { display:inline-block; background:#111827; color:#fff; border-radius:999px; padding:4px 10px; font-size:.75rem; font-weight:700; letter-spacing:.02em; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-attachment: fixed;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-align: center;
+      background: linear-gradient(90deg, #ff8a00, #e52e71);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: fadeInDown 1s ease-in-out;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      width: 90%;
+      max-width: 500px;
+      animation: fadeInUp 1s ease-in-out;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 15px;
+      background: linear-gradient(90deg, #ff8a00, #e52e71);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    img {
+      margin-top: 20px;
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.3);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      f
+
+rom { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-      <h1>ByZaPa – Generador de Imágenes</h1>
-      <span class="badge">SDXL Core (Stability)</span>
-    </div>
-
-    <label>Descripción (prompt)</label>
-    <textarea id="prompt" rows="4" placeholder="Hiperrealista, hiperdetallado, retrato cinematográfico 8K…"></textarea>
-
-    <div class="row">
-      <div>
-        <label>Tamaño</label>
-        <select id="size">
-          <option value="1024x1024">1024×1024</option>
-          <option value="1344x768">1344×768 (16:9)</option>
-          <option value="768x1344">768×1344 (9:16)</option>
-        </select>
-      </div>
-      <div>
-        <label>Semilla (opcional)</label>
-        <input id="seed" type="number" placeholder="aleatoria" />
-      </div>
-    </div>
-
-    <label>Negativos (opcional)</label>
-    <input id="negative" placeholder="Baja calidad, manos malformadas, ruido…" />
-
-    <button id="go">Generar</button>
-    <p class="hint">Consejo: añade tu marca, ej. "logo ByZaPa integrado en el entorno".</p>
-
-    <div class="out">
-      <div id="status" class="hint"></div>
-      <a id="dl" download="byzapa-image.png" style="display:none;">Descargar PNG</a>
-    </div>
-
-    <img id="img" alt="Resultado" style="display:none;" />
+  <h1>🚀 ByZaPa – Generador de Imágenes</h1>
+  <div class="container">
+    <label for="prompt">Descripción (prompt)</label>
+    <textarea id="prompt" rows="3" placeholder="Escribe aquí tu prompt viral..."></textarea>
+    <button onclick="generateImage()">Generar Imagen</button>
+    <div id="result"></div>
   </div>
 
   <script>
-    const el = (id) => document.getElementById(id);
-    el('go').addEventListener('click', async () => {
-      const prompt = el('prompt').value.trim();
-      if (!prompt) { alert('Escribe un prompt.'); return; }
-      const [w,h] = el('size').value.split('x').map(Number);
-      const payload = {
-        prompt,
-        width: w, height: h,
-        negative_prompt: el('negative').value.trim() || undefined,
-        seed: el('seed').value ? Number(el('seed').value) : undefined,
-      };
-      try {
-        el('go').disabled = true; el('status').textContent = 'Generando…';
-        const res = await fetch('/api/generate', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(await res.text());
-        const data = await res.json();
-        el('img').src = data.image; el('img').style.display = 'block';
-        el('dl').href = data.image; el('dl').style.display = 'inline-block';
-        el('status').textContent = 'Listo ✅';
-      } catch (e) {
-        console.error(e); el('status').textContent = 'Error: ' + e.message;
-        alert('Error generando imagen: ' + e.message);
-      } finally {
-        el('go').disabled = false;
+    async function generateImage() {
+      const prompt = document.getElementById("prompt").value;
+      if (!prompt.trim()) {
+        alert("Por favor escribe un prompt antes de generar.");
+        return;
       }
-    });
+
+      document.getElementById("result").innerHTML = "<p>⏳ Generando imagen...</p>";
+
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById("result").innerHTML =
+          `<img src="${data.image}" alt="Imagen generada" />`;
+      } catch (err) {
+        document.getElementById("result").innerHTML =
+          `<p style="color: red;">❌ Error: ${err.message}</p>`;
+      }
+    }
   </script>
 </body>
 </html>
