@@ -2,138 +2,227 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ByZaPa – Generador de Imágenes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ByZaPa – Generador</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-attachment: fixed;
+    :root{
+      --bg:#0f1c24; --card:#172935; --muted:#8fb0c3; --txt:#e9f3f9;
+      --grad1:#ff8a00; --grad2:#e52e71;
     }
-
-    h1 {
-      font-size: 2.5rem;
-      text-align: center;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: fadeInDown 1s ease-in-out;
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--txt); background:radial-gradient(80vw 80vh at 10% -10%,#223848,transparent),
+      radial-gradient(70vw 60vh at 100% 0%,#1b2f3d,transparent), var(--bg);
+      min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
     }
-
-    .container {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 20px;
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-      width: 90%;
-      max-width: 500px;
-      animation: fadeInUp 1s ease-in-out;
+    .wrap{width:100%; max-width:980px; display:grid; gap:24px}
+    h1{margin:0; font-size:clamp(28px,4.5vw,46px); letter-spacing:.5px;
+      background:linear-gradient(90deg,var(--grad1),var(--grad2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+    .sub{color:var(--muted); margin-top:6px}
+    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:24px}
+    @media (max-width:900px){ .grid{grid-template-columns:1fr}}
+    .card{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+      border-radius:16px; padding:16px; backdrop-filter: blur(6px);}
+    label{font-weight:600; font-size:14px; color:#cfe4f2; margin:10px 0 8px; display:block}
+    textarea,input,select{
+      width:100%; border:1px solid #294250; background:#0f1f29; color:var(--txt);
+      border-radius:10px; padding:12px 14px; font-size:15px; outline:none;
     }
-
-    label {
-      display: block;
-      margin: 10px 0 5px;
-      font-weight: bold;
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+    button{
+      width:100%; padding:14px; border:none; border-radius:12px; font-weight:700;
+      font-size:16px; cursor:pointer; color:white;
+      background:linear-gradient(90deg,var(--grad1),var(--grad2));
+      transition: transform .12s ease, filter .12s ease;
     }
-
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      resize: none;
-      font-size: 1rem;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      margin-top: 15px;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      color: white;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-
-    button:hover {
-      transform: scale(1.05);
-      opacity: 0.9;
-    }
-
-    img {
-      margin-top: 20px;
-      max-width: 100%;
-      border-radius: 10px;
-      box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.3);
-      animation: fadeIn 1s ease-in-out;
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeIn {
-      f
-
-rom { opacity: 0; }
-      to { opacity: 1; }
-    }
+    button:hover{ transform: translateY(-1px); filter:brightness(1.05);}
+    .img{width:100%; border-radius:12px; border:1px solid rgba(255,255,255,.08);
+      background:#0c1820; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center}
+    .caption{margin-top:10px; color:var(--muted); font-size:13px}
+    .pill{display:inline-flex; gap:8px; align-items:center; font-size:12px; color:#b8d5e6}
+    .err{color:#ff8e9e; background:#3a1a23; border:1px solid #5b2a35; padding:10px 12px; border-radius:10px}
   </style>
 </head>
 <body>
-  <h1>🚀 ByZaPa – Generador de Imágenes</h1>
-  <div class="container">
-    <label for="prompt">Descripción (prompt)</label>
-    <textarea id="prompt" rows="3" placeholder="Escribe aquí tu prompt viral..."></textarea>
-    <button onclick="generateImage()">Generar Imagen</button>
-    <div id="result"></div>
+  <div class="wrap">
+    <div>
+      <h1>🚀 ByZaPa – Generador de Imágenes</h1>
+      <div class="sub">Elige estilo, aspecto y calidad. Luego pega tu prompt y ¡dale caña!</div>
+    </div>
+
+    <div class="grid">
+      <!-- Panel de controles -->
+      <div class="card">
+        <label>Descripción (prompt)</label>
+        <textarea id="prompt" rows="4" placeholder="Un retrato cinematográfico, luz suave, depth of field..."></textarea>
+
+        <label>Negativos (opcional)</label>
+        <input id="neg" placeholder="baja calidad, manos malformadas, ruido..."/>
+
+        <div class="row">
+          <div>
+            <label>Estilo</label>
+            <select id="style">
+              <option value="ninguno">— Sin preset —</option>
+              <option value="realista">Realista</option>
+              <option value="cinematografico">Cinematográfico</option>
+              <option value="arte-digital">Arte digital</option>
+              <option value="anime">Anime</option>
+              <option value="pixel">Pixel art</option>
+              <option value="producto">Foto de producto</option>
+              <option value="retrato">Retrato</option>
+              <option value="arquitectura">Arquitectura</option>
+            </select>
+          </div>
+          <div>
+            <label>Calidad</label>
+            <select id="quality">
+              <option value="standard">Estándar (mejor)</option>
+              <option value="fast">Rápida (más barata)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row3">
+          <div>
+            <label>Relación de aspecto</label>
+            <select id="ratio">
+              <option value="1:1">1:1 (cuadrado)</option>
+              <option value="3:2">3:2</option>
+              <option value="2:3">2:3</option>
+              <option value="16:9">16:9</option>
+              <option value="9:16">9:16</option>
+            </select>
+          </div>
+          <div>
+            <label>Tamaño base</label>
+            <select id="base">
+              <option value="512">512</option>
+              <option value="768">768</option>
+              <option value="1024" selected>1024</option>
+            </select>
+          </div>
+          <div>
+            <label>Semilla (opcional)</label>
+            <input id="seed" type="number" min="0" placeholder="aleatoria"/>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; display:flex; gap:12px; align-items:center">
+          <button id="btn" onclick="generate()">Generar</button>
+          <span class="pill" id="status">Listo</span>
+        </div>
+
+        <div id="error" style="margin-top:12px; display:none" class="err"></div>
+      </div>
+
+      <!-- Resultado -->
+      <div class="card">
+        <div id="imageBox" class="img">🖼️ Tu imagen aparecerá aquí</div>
+        <div class="caption" id="caption"></div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    async function generateImage() {
-      const prompt = document.getElementById("prompt").value;
-      if (!prompt.trim()) {
-        alert("Por favor escribe un prompt antes de generar.");
-        return;
-      }
-
-      document.getElementById("result").innerHTML = "<p>⏳ Generando imagen...</p>";
-
-      try {
-        const res = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt })
-        });
-
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-
-        document.getElementById("result").innerHTML =
-          `<img src="${data.image}" alt="Imagen generada" />`;
-      } catch (err) {
-        document.getElementById("result").innerHTML =
-          `<p style="color: red;">❌ Error: ${err.message}</p>`;
-      }
+<script>
+  function stylePrompt(style){
+    switch(style){
+      case 'realista':          return 'estilo realista, foto nítida, texturas naturales';
+      case 'cinematografico':   return 'estilo cinematográfico, iluminación dramática, color grading, bokeh';
+      case 'arte-digital':      return 'arte digital, ilustración detallada';
+      case 'anime':             return 'estilo anime, líneas limpias, colores vivos';
+      case 'pixel':             return 'pixel art, 8-bit, baja resolución estética';
+      case 'producto':          return 'foto de producto, fondo neutro, iluminación de estudio';
+      case 'retrato':           return 'retrato, piel natural, ojos enfocados, iluminación suave';
+      case 'arquitectura':      return 'arquitectura, líneas rectas, perspectiva, materiales realistas';
+      default:                  return '';
     }
-  </script>
+  }
+
+  function computeSize(ratio, base){
+    const [wR,hR] = ratio.split(':').map(Number);
+    let w = +base, h = Math.round(+base * (hR/wR));
+    // Para ratios panorámicos ajustamos al mayor lado = base
+    if (wR>hR){ w=+base; h=Math.round(+base*(hR/wR)); }
+    else if (hR>wR){ h=+base; w=Math.round(+base*(wR/hR)); }
+    return {width: Math.max(256,w), height: Math.max(256,h)};
+  }
+
+  async function generate(){
+    const prompt = document.getElementById('prompt').value.trim();
+    const neg    = document.getElementById('neg').value.trim();
+    const style  = document.getElementById('style').value;
+    const ratio  = document.getElementById('ratio').value;
+    const base   = document.getElementById('base').value;
+    const seedV  = document.getElementById('seed').value;
+    const quality= document.getElementById('quality').value;
+
+    if(!prompt){ return msg('Escribe un prompt.', true); }
+
+    const {width,height} = computeSize(ratio, base);
+    const styled = [prompt, stylePrompt(style)].filter(Boolean).join(', ');
+
+    setBusy(true);
+    msg('', false, true);
+
+    try{
+      const res = await fetch('/api/generate', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          prompt: styled,
+          negative_prompt: neg || undefined,
+          width, height,
+          seed: seedV ? Number(seedV) : undefined,
+          quality
+        })
+      });
+
+      // Respuesta debe ser JSON { image: "data:image/png;base64,..." } o { error: "..." }
+      const dataText = await res.text();
+      let data;
+      try { data = JSON.parse(dataText); }
+      catch(e){
+        throw new Error('Respuesta no válida del servidor: ' + dataText.slice(0,120) + '…');
+      }
+
+      if(data.error) throw new Error(data.error);
+
+      const img = new Image();
+      img.src = data.image;
+      img.alt = 'Imagen generada';
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '12px';
+
+      const box = document.getElementById('imageBox');
+      box.innerHTML = '';
+      box.appendChild(img);
+
+      document.getElementById('caption').textContent =
+        `Tamaño ${width}×${height} • Estilo: ${style} • Modo: ${quality}`;
+      setBusy(false);
+    }catch(err){
+      setBusy(false);
+      msg('❌ ' + err.message, true);
+    }
+  }
+
+  function setBusy(b){
+    const btn = document.getElementById('btn');
+    const st  = document.getElementById('status');
+    btn.disabled = b;
+    btn.textContent = b ? 'Generando…' : 'Generar';
+    st.textContent  = b ? 'Trabajando' : 'Listo';
+  }
+  function msg(t, isErr=false, hide=false){
+    const el = document.getElementById('error');
+    if(hide){ el.style.display='none'; return; }
+    el.textContent = t;
+    el.style.display = t ? 'block' : 'none';
+  }
+</script>
 </body>
 </html>
