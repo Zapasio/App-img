@@ -7,7 +7,122 @@ export default async function handler(req, res) {
   try {
     const {
       prompt,
-      negative_prompt = '',
+// api/generate.js
+// Compatibilidad: SD3 (Stability AI). Devuelve PNG en base64.
+// Lee: prompt, negative_prompt, aspect_ratio, style, seed (opcional).
+// Ignora "calidad" y "tamaño base" (SD3 no los usa); los integramos en el prompt.
+
+export const config = { runtime: "nodejs20.x" };
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método no permitido" });
+  }
+
+  try {
+    const apiKey = process.env.STABILITY_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "Falta STABILITY_API_KEY en el entorno" });
+    }
+
+    // El frontend envía JSON
+    const {
+      prompt = "",
+      negative_prompt = "",
+      aspect_ratio = "1:1", // valores válidos SD3: "1:1","16:9","9:16","3:2","2:3","4:3","3:4","21:9"
+      style = "none",       // lo convertimos a prefijo de prompt
+      seed,                 // opcional
+      quality,              // ignorado por la API; lo usamos para matizar el prompt
+      // base_size           // ignorado por la API
+    } = req.body || {};
+
+    if (!prompt.trim()) {
+      return res.status(400).json({ error: "El prompt es obligatorio" });
+    }
+
+    // Mapas UI -> texto de estilo para enriquecer el prompt
+    const styleMap = {
+      "realista": "ultrarealist, photo-realistic, detailed lighting, natural skin tones,",
+      "cinematográfico": "cinematic lighting, film still, shallow depth of field, anamorphic bokeh,",
+      "arte digital": "digital art, trending on artstation, vibrant colors,",
+      "pixel art": "8-bit pixel art, limited palette, crisp pixels,",
+      "ilustración": "illustration, clean line art, flat shading,",
+      "fantasía": "epic fantasy, high detail, dramatic lighting,",
+      "none": ""
+    };
+
+    // Calidad como matiz (no parámetro de API)
+    const qualityMap = {
+      "rápida": "simple, minimal detail,",
+      "estándar": "highly detailed,",
+      "alta": "ultra-detailed, sharp focus,"
+    };
+
+    const stylePrefix = styleMap[String(style || "").toLowerCase()] ?? "";
+    const qualityPrefix = qualityMap[String(quality || "").toLowerCase()] ?? "";
+
+    const finalPrompt = [stylePrefix, qualityPrefix, prompt].filter(Boolean).join(" ").trim();
+
+    // Validar/normalizar aspect_ratio a los permitidos por SD3
+    const ratioMap = {
+      "1:1": "1:1",
+      "cuadrado": "1:1",
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "3:2": "3:2",
+      "2:3": "2:3",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "21:9": "21:9"
+    };
+    const cleanRatio = String(aspect_ratio || "").split(" ")[0]; // por si viene "1:1 (cuadrado)"
+    const sd3Ratio = ratioMap[cleanRatio] ?? "1:1";
+
+    // Construir payload para SD3
+    const form = new FormData();
+    form.append("prompt", finalPrompt);
+    if (negative_prompt && negative_prompt.trim()) {
+      form.append("negative_prompt", negative_prompt.trim());
+    }
+    form.append("aspect_ratio", sd3Ratio);
+    form.append("output_format", "png");
+    if (typeof seed !== "undefined" && seed !== null && `${seed}`.trim() !== "") {
+      form.append("seed", String(seed));
+    }
+
+    // Llamada a Stability SD3
+    const response = await fetch("https://api.stability.ai/v2beta/stable-image/generate/sd3", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: "image/*"
+      },
+      body: form
+    });
+
+    if (!response.ok) {
+      // Intentar leer texto de error de Stability
+      const errText = await response.text().catch(() => "");
+      return res.status(response.status).json({
+        error: "Error de Stability",
+        status: response.status,
+        details: errText || "Respuesta no válida"
+      });
+    }
+
+    // Recoger imagen (bytes) -> base64
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+    // Entregar JSON que tu frontend entiende
+    return res.status(200).json({
+      image: `data:image/png;base64,${base64}`,
+      aspect_ratio: sd3Ratio
+    });
+  } catch (err) {
+    return res.status(500).json({ error: "Fallo interno", details: String(err?.message || err) });
+  }
+}      negative_prompt = '',
       style = 'digital-art',        // valores de tu <select>
       quality = 'standard',         // 'standard' | 'high' | 'draft'
       aspect_ratio = '1:1',         // '1:1', '16:9', etc.
