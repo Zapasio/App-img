@@ -21,6 +21,7 @@ export default async function handler(req, res) {
       size = 1024,             // 512 | 768 | 1024
       seed                      // opcional
     } = req.body || {};
+nano api/generate.js
     if (!prompt || typeof prompt !== 'string') {
       return res.status(400).json({ error: 'Prompt is required' });
     }
@@ -29,14 +30,11 @@ export default async function handler(req, res) {
     const styleMap = {
       'none': undefined,
       'sin preset': undefined,
-      'ninguno': undefined,
       'realista': 'photographic',
       'cinematografico': 'cinematic',
       'cinematográfico': 'cinematic',
       'arte digital': 'digital-art',
-      'arte-digital': 'digital-art',
       'pixel art': 'pixel-art',
-      'pixel': 'pixel-art',
       'anime': 'anime',
       'fantasia': 'fantasy-art',
       'fantasía': 'fantasy-art',
@@ -69,10 +67,8 @@ export default async function handler(req, res) {
     const qualityMap = {
       'rapida': 'speed',
       'rápida': 'speed',
-      'fast': 'speed',
       'estandar': 'quality',
       'estándar': 'quality',
-      'standard': 'quality',
       'alta': 'quality'
     };
 
